@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h1>This Is The Home Page</h1>
+
+<form method = 'POST'>
+    <div>
+        <input id="createEvent" type="submit" name="action"  value="CREATE AN EVENT">
+    </div>
+    <div>
+        <input id="deleteEvent" type="submit" name="action"  value="DELETE AN EVENT">
+    </div>
+</form>
+{% endblock %}

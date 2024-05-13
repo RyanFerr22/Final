@@ -1,0 +1,179 @@
+{% extends "base.html" %} {% block title %}Add Event{% endblock %} {% block
+content %}
+
+<div
+  class="fileDisplay"
+  style="
+    position: absolute;
+    border-style: solid;
+    left: 125px;
+    top: 125px;
+    height: 425px;
+    width: 425px;
+  "
+>
+  {% if filename %}
+
+  <img
+    src="{{ layoutfolder }}\{{ filename }}"
+    style="height: 100%; width: 100%"
+  />
+
+  <script type="text/javascript">
+    async function getMousePosition(img, event) {
+      let rect = img.getBoundingClientRect();
+      let x = event.clientX - rect.left;
+      let y = event.clientY - rect.top;
+      console.log("Coordinate x: " + x, "Coordinate y: " + y);
+      await postData("/add_stall", { x, y, eventId: event.id });
+      renderStalls(await loadStalls());
+    }
+
+    // Example POST method implementation:
+    async function postData(url = "", data = {}) {
+      // Default options are marked with *
+      const response = await fetch(url, {
+        method: "POST", // *GET, POST, PUT, DELETE, etc.
+        mode: "cors", // no-cors, *cors, same-origin
+        cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: "same-origin", // include, *same-origin, omit
+        headers: {
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: "follow", // manual, *follow, error
+        referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      });
+      return response.json(); // parses JSON response into native JavaScript objects
+    }
+
+    let canvasElem = document.querySelector("img");
+
+    canvasElem.addEventListener("mousedown", async function (e) {
+      await getMousePosition(canvasElem, e);
+    });
+
+    function loadStalls() {
+      return fetch("/stalls")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          return response.json();
+        })
+        .catch((error) => {
+          console.error("There was a problem with the fetch operation:", error);
+        });
+    }
+
+    function renderStalls(stalls) {
+      let fileDisplay = document.querySelector(".fileDisplay");
+      for (let stall of stalls) {
+        let stallDiv = document.createElement("div");
+        fileDisplay.appendChild(stallDiv);
+        stallDiv.style.position = "absolute";
+        stallDiv.style.height = "25px";
+        stallDiv.style.width = "25px";
+        stallDiv.style.left = `${stall.x}px`;
+        stallDiv.style.top = `${stall.y}px`;
+        stallDiv.style.backgroundColor = "red";
+        stallDiv.innerHTML = stall.id;
+        stallDiv.style.zIndex = 2;
+      }
+    }
+  </script>
+
+  {% else %}
+  <form
+    action=""
+    method="POST"
+    style="height: 100%; width: 100%"
+    enctype="multipart/form-data"
+  >
+    <input type="file" name="file" value="file" />
+    <input type="submit" name="upload" value="upload" />
+    <input type="hidden" name="action" value="upload" />
+  </form>
+  {% endif %}
+</div>
+
+<div
+  class="eventform"
+  style="
+    position: absolute;
+    right: 125px;
+    top: 75px;
+    height: 300px;
+    width: 400px;
+  "
+>
+  <form method="POST" style="height: 100%; width: 100%">
+    <div class="form-group">
+      <label for="event_name">Event Name</label>
+      <input
+        type="text"
+        class="form-control"
+        id="event_name"
+        name="event_name"
+        placeholder="Enter Event Name"
+      />
+    </div>
+    <div class="form-group">
+      <label for="event_type">Event Type</label>
+      <input
+        type="text"
+        class="form-control"
+        id="event_type"
+        name="event_type"
+        placeholder="Enter Event Type"
+      />
+    </div>
+    <div class="form-group">
+      <label for="event_date">Event Date</label>
+      <input
+        type="date"
+        class="form-control"
+        id="event_date"
+        name="event_date"
+        placeholder="Enter Date Of Event"
+      />
+    </div>
+    <div class="form-group">
+      <label for="event_time">Event Start Time</label>
+      <input
+        type="time"
+        class="form-control"
+        id="event_time"
+        name="event_time"
+      />
+    </div>
+  </form>
+</div>
+<form method="POST">
+  <div action="" class="stalls">
+    <div style="position: absolute; right: 260px; bottom: 150px">
+      <input
+        id="createStall"
+        type="submit"
+        name="action"
+        value="CREATE A STALL"
+      />
+    </div>
+    <div
+      style="
+        position: absolute;
+        right: 125px;
+        bottom: 20px;
+        height: 120px;
+        width: 400px;
+        border: 1px solid #ccc;
+        font: 16px/26px Georgia, Garamond, Serif;
+        overflow: auto;
+      "
+    >
+      <ul style="list-style-type: none"></ul>
+    </div>
+  </div>
+</form>
+{% endblock %}
